@@ -74,8 +74,8 @@ python src/agentic_loop/agent_loop.py
 
 ### Optionales HTTP-Logging
 
-Auf dem Branch `main` kann das Logging der OpenAI-Requests und -Responses mit
-`--http-logging` aktiviert werden.
+Auf dem Branch `main` kann ein vollständiger HTTP-Log mit `--http-logging`
+aktiviert werden.
 
 Mit `uv`:
 
@@ -89,10 +89,21 @@ Ohne `uv`:
 python src/agentic_loop/agent_loop.py --http-logging
 ```
 
-Ohne den Parameter ist das HTTP-Logging deaktiviert. Authentifizierungs-Header
-werden im Log maskiert. Request- und Response-Bodies können jedoch Prompts,
-Tool-Ergebnisse und Modellantworten enthalten und sollten deshalb nicht in
-öffentliche Logs kopiert werden.
+Der Logger gibt die JSON-Bodies vollständig und eingerückt aus. Besonders
+interessant ist im Request das Feld `messages`: Dort sind der System Prompt,
+die Aufgabe, frühere Agent-Antworten und die bisherigen Tool-Ergebnisse zu
+sehen.
+
+Diese Übung verwendet bewusst nicht das native Tool-Calling der OpenAI API.
+Deshalb gibt es im Request kein `tools`-Feld. Stattdessen beschreibt der
+System Prompt die erlaubten Aktionen `run_shell`, `read_file`, `write_file`
+und `finish`. Das Modell antwortet mit einer JSON-Aktion, die anschließend
+vom Python-Code ausgeführt wird.
+
+Ohne den Parameter ist das HTTP-Logging deaktiviert.
+Authentifizierungs-Header und Cookies werden maskiert. Request- und
+Response-Bodies können jedoch Prompts, Tool-Ergebnisse und Modellantworten
+enthalten und sollten deshalb nicht in öffentliche Logs kopiert werden.
 
 ## Arbeitsweise
 

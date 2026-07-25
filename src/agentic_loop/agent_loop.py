@@ -85,7 +85,13 @@ TASK = (
 )
 
 
-SENSITIVE_HEADERS = {"authorization", "api-key", "x-api-key"}
+SENSITIVE_HEADERS = {
+    "authorization",
+    "api-key",
+    "x-api-key",
+    "cookie",
+    "set-cookie",
+}
 
 
 def sanitized_headers(headers: httpx.Headers) -> dict[str, str]:
@@ -95,27 +101,54 @@ def sanitized_headers(headers: httpx.Headers) -> dict[str, str]:
     }
 
 
+def format_http_body(body: bytes, encoding: str = "utf-8") -> str:
+    if not body:
+        return "<empty>"
+
+    text = body.decode(encoding, errors="replace")
+    try:
+        return json.dumps(
+            json.loads(text),
+            ensure_ascii=False,
+            indent=2,
+        )
+    except json.JSONDecodeError:
+        return text
+
+
 def log_http_request(request: httpx.Request) -> None:
     request.read()
-    body = request.content.decode("utf-8", errors="replace")
 
     print("\n=== OpenAI Request ===")
     print(f"{request.method} {request.url}")
-    print(f"Headers: {sanitized_headers(request.headers)}")
+    print("Headers:")
+    print(
+        json.dumps(
+            sanitized_headers(request.headers),
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     print("Body:")
-    print(body or "<empty>")
+    print(format_http_body(request.content))
 
 
 def log_http_response(response: httpx.Response) -> None:
     response.read()
     encoding = response.encoding or "utf-8"
-    body = response.content.decode(encoding, errors="replace")
 
     print("=== OpenAI Response ===")
     print(f"Status: {response.status_code}")
-    print(f"Headers: {dict(response.headers)}")
+    print("Headers:")
+    print(
+        json.dumps(
+            sanitized_headers(response.headers),
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     print("Body:")
-    print(body or "<empty>")
+    print(format_http_body(response.content, encoding))
     print("=======================\n")
 
 
