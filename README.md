@@ -16,19 +16,60 @@ Prompt -> LLM-Antwort -> Tool-Ausführung -> Tool-Feedback -> nächster Schritt.
 ## Voraussetzungen
 
 - Python 3.13
-- `uv` als Paketmanager
 - OpenAI API Key gesetzt
 
-Abhängigkeiten installieren:
+`uv` ist der empfohlene Paketmanager, aber nicht zwingend erforderlich.
+
+## Installation
+
+### Empfohlen: mit uv
+
+Abhängigkeiten aus der mitgelieferten Lock-Datei installieren:
 
 ```bash
-uv sync
+uv sync --frozen
 ```
 
-API-Key setzen:
+### Alternative: nur mit Python 3.13 und pip
+
+Virtuelle Umgebung erstellen und aktivieren:
+
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate
+```
+
+Unter Windows wird die Umgebung so aktiviert:
+
+```powershell
+py -3.13 -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+Danach die Abhängigkeiten installieren:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+## API-Key setzen
 
 ```bash
 export OPENAI_API_KEY="<dein-key>"
+```
+
+## Anwendung starten
+
+Mit `uv`:
+
+```bash
+uv run python src/agentic_loop/agent_loop.py
+```
+
+Ohne `uv` in der aktivierten virtuellen Umgebung:
+
+```bash
+python src/agentic_loop/agent_loop.py
 ```
 
 ## Arbeitsweise
@@ -76,12 +117,6 @@ git checkout main
 ```
 
 `main` enthält die vollständige, lauffähige Lösung.
-
-## Anwendung starten
-
-```bash
-uv run python src/agentic_loop/agent_loop.py
-```
 
 ## Nützliche Kommandos
 
