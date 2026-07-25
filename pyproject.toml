@@ -1,0 +1,12 @@
+[project]
+name = "agentic-loop-exercise"
+version = "0.1.0"
+description = "Coding exercise for implementing a simple agentic loop"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "openai>=2.0.0",
+]
+
+[tool.uv]
+package = false
