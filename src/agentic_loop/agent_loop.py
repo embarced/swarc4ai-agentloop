@@ -100,8 +100,21 @@ def run_agent(client: Any | None = None, max_steps: int = 15) -> None:
         )
         content = response.choices[0].message.content or ""
 
+        # TODO: ÜBUNG 1 - Parse den JSON-String in ein AgentAction-Objekt.
+        # TODO: ÜBUNG 1 - Gib den Gedanken des Agenten aus, damit der Loop nachvollziehbar wird.
+        # TODO: ÜBUNG 1 - Beende den Loop sofort, wenn die Action "finish" ist.
+        # TODO: ÜBUNG 1 - Rufe je nach Action die passende Tool-Funktion auf:
+        # run_shell, read_file oder write_file.
+        # TODO: ÜBUNG 1 - Behandle unbekannte Actions als Fehlertext.
+        # TODO: ÜBUNG 1 - Gib das Tool-Ergebnis gekürzt auf der Konsole aus.
+        # TODO: ÜBUNG 1 - Füge die Assistant-Antwort und das Tool-Ergebnis wieder
+        # zur Message-History hinzu, damit der Agent im nächsten Schritt auf dem
+        # letzten Ergebnis weiterarbeiten kann.
+        # SO PRÜFST DU ES: Starte das Programm. Der Agent sollte mehrere Schritte
+        # ausführen, eine Datei im Ordner "HelloWorld" erzeugen, sie ausführen und
+        # am Ende "Hallo Welt aus Python" ausgeben.
         raise NotImplementedError(
-            "Die branch-spezifische Loop-Implementierung fehlt."
+            "ÜBUNG 1: Implementiere JSON-Parsing, Tool-Routing und History-Update."
         )
 
 
