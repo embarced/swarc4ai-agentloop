@@ -1,11 +1,14 @@
+import argparse
 import json
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from openai import OpenAI
+import httpx
+from openai import DefaultHttpxClient, OpenAI
 
 
 @dataclass(slots=True)
@@ -82,6 +85,53 @@ TASK = (
 )
 
 
+SENSITIVE_HEADERS = {"authorization", "api-key", "x-api-key"}
+
+
+def sanitized_headers(headers: httpx.Headers) -> dict[str, str]:
+    return {
+        name: "<redacted>" if name.lower() in SENSITIVE_HEADERS else value
+        for name, value in headers.items()
+    }
+
+
+def log_http_request(request: httpx.Request) -> None:
+    request.read()
+    body = request.content.decode("utf-8", errors="replace")
+
+    print("\n=== OpenAI Request ===")
+    print(f"{request.method} {request.url}")
+    print(f"Headers: {sanitized_headers(request.headers)}")
+    print("Body:")
+    print(body or "<empty>")
+
+
+def log_http_response(response: httpx.Response) -> None:
+    response.read()
+    encoding = response.encoding or "utf-8"
+    body = response.content.decode(encoding, errors="replace")
+
+    print("=== OpenAI Response ===")
+    print(f"Status: {response.status_code}")
+    print(f"Headers: {dict(response.headers)}")
+    print("Body:")
+    print(body or "<empty>")
+    print("=======================\n")
+
+
+def create_openai_client(http_logging: bool = False) -> OpenAI:
+    if not http_logging:
+        return OpenAI()
+
+    http_client = DefaultHttpxClient(
+        event_hooks={
+            "request": [log_http_request],
+            "response": [log_http_response],
+        }
+    )
+    return OpenAI(http_client=http_client)
+
+
 def run_agent(client: Any | None = None, max_steps: int = 15) -> None:
     api_client = client or OpenAI()
     messages: list[dict[str, str]] = [
@@ -143,8 +193,22 @@ def run_agent(client: Any | None = None, max_steps: int = 15) -> None:
             print(f"Raw Content: {content}", file=sys.stderr)
 
 
-def main() -> None:
-    run_agent()
+def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Ein einfacher autonomer Coding-Agent."
+    )
+    parser.add_argument(
+        "--http-logging",
+        action="store_true",
+        help="OpenAI HTTP-Requests und -Responses protokollieren.",
+    )
+    return parser.parse_args(args)
+
+
+def main(args: Sequence[str] | None = None) -> None:
+    options = parse_args(args)
+    with create_openai_client(options.http_logging) as client:
+        run_agent(client)
 
 
 if __name__ == "__main__":

@@ -72,6 +72,28 @@ Ohne `uv` in der aktivierten virtuellen Umgebung:
 python src/agentic_loop/agent_loop.py
 ```
 
+### Optionales HTTP-Logging
+
+Auf dem Branch `main` kann das Logging der OpenAI-Requests und -Responses mit
+`--http-logging` aktiviert werden.
+
+Mit `uv`:
+
+```bash
+uv run python src/agentic_loop/agent_loop.py --http-logging
+```
+
+Ohne `uv`:
+
+```bash
+python src/agentic_loop/agent_loop.py --http-logging
+```
+
+Ohne den Parameter ist das HTTP-Logging deaktiviert. Authentifizierungs-Header
+werden im Log maskiert. Request- und Response-Bodies können jedoch Prompts,
+Tool-Ergebnisse und Modellantworten enthalten und sollten deshalb nicht in
+öffentliche Logs kopiert werden.
+
 ## Arbeitsweise
 
 Dieses Repository enthält:
