@@ -100,9 +100,47 @@ def run_agent(client: Any | None = None, max_steps: int = 15) -> None:
         )
         content = response.choices[0].message.content or ""
 
-        raise NotImplementedError(
-            "Die branch-spezifische Loop-Implementierung fehlt."
-        )
+        try:
+            action_data = AgentAction.from_json(content)
+
+            print(f"\n[Gedanke]: {action_data.thought}")
+
+            if action_data.action == "finish":
+                print("Fertig!")
+                break
+
+            match action_data.action:
+                case "run_shell":
+                    tool_result = run_shell(action_data.args["command"])
+                case "read_file":
+                    tool_result = read_file(action_data.args["path"])
+                case "write_file":
+                    tool_result = write_file(
+                        action_data.args["path"],
+                        action_data.args["content"],
+                    )
+                case _:
+                    tool_result = (
+                        f"Fehler: Unbekanntes Tool {action_data.action}"
+                    )
+
+            display_result = (
+                f"{tool_result[:100]}..."
+                if len(tool_result) > 100
+                else tool_result
+            )
+            print(f"   [Ergebnis]: {display_result}")
+
+            messages.append({"role": "assistant", "content": content})
+            messages.append(
+                {"role": "user", "content": f"Tool Output: {tool_result}"}
+            )
+        except Exception as error:
+            print(
+                f"JSON Parsing Fehler oder Ausnahmefehler: {error}",
+                file=sys.stderr,
+            )
+            print(f"Raw Content: {content}", file=sys.stderr)
 
 
 def main() -> None:
