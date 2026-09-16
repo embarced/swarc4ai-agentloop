@@ -74,8 +74,7 @@ python src/agentic_loop/agent_loop.py
 
 ### Optionales HTTP-Logging
 
-Auf dem Branch `main` kann ein vollständiger HTTP-Log mit `--http-logging`
-aktiviert werden.
+Ein vollständiger HTTP-Log kann mit `--http-logging` aktiviert werden.
 
 Mit `uv`:
 
