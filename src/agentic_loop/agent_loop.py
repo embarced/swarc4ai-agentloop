@@ -1,14 +1,11 @@
-import argparse
 import json
 import subprocess
 import sys
-from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import httpx
-from openai import DefaultHttpxClient, OpenAI
+from openai import OpenAI
 
 
 @dataclass(slots=True)
@@ -85,86 +82,6 @@ TASK = (
 )
 
 
-SENSITIVE_HEADERS = {
-    "authorization",
-    "api-key",
-    "x-api-key",
-    "cookie",
-    "set-cookie",
-}
-
-
-def sanitized_headers(headers: httpx.Headers) -> dict[str, str]:
-    return {
-        name: "<redacted>" if name.lower() in SENSITIVE_HEADERS else value
-        for name, value in headers.items()
-    }
-
-
-def format_http_body(body: bytes, encoding: str = "utf-8") -> str:
-    if not body:
-        return "<empty>"
-
-    text = body.decode(encoding, errors="replace")
-    try:
-        return json.dumps(
-            json.loads(text),
-            ensure_ascii=False,
-            indent=2,
-        )
-    except json.JSONDecodeError:
-        return text
-
-
-def log_http_request(request: httpx.Request) -> None:
-    request.read()
-
-    print("\n=== OpenAI Request ===")
-    print(f"{request.method} {request.url}")
-    print("Headers:")
-    print(
-        json.dumps(
-            sanitized_headers(request.headers),
-            ensure_ascii=False,
-            indent=2,
-        )
-    )
-    print("Body:")
-    print(format_http_body(request.content))
-
-
-def log_http_response(response: httpx.Response) -> None:
-    response.read()
-    encoding = response.encoding or "utf-8"
-
-    print("=== OpenAI Response ===")
-    print(f"Status: {response.status_code}")
-    print("Headers:")
-    print(
-        json.dumps(
-            sanitized_headers(response.headers),
-            ensure_ascii=False,
-            indent=2,
-        )
-    )
-    print("Body:")
-    print(format_http_body(response.content, encoding))
-    print("=======================\n")
-
-
-def create_openai_client(http_logging: bool = False) -> OpenAI:
-    if not http_logging:
-        return OpenAI()
-
-    http_client = DefaultHttpxClient(
-        event_hooks={
-            "request": [log_http_request],
-            "response": [log_http_response],
-        }
-    )
-    return OpenAI(http_client=http_client)
-
-
 def run_agent(client: Any | None = None, max_steps: int = 15) -> None:
     api_client = client or OpenAI()
     messages: list[dict[str, str]] = [
@@ -226,22 +143,8 @@ def run_agent(client: Any | None = None, max_steps: int = 15) -> None:
             print(f"Raw Content: {content}", file=sys.stderr)
 
 
-def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Ein einfacher autonomer Coding-Agent."
-    )
-    parser.add_argument(
-        "--http-logging",
-        action="store_true",
-        help="OpenAI HTTP-Requests und -Responses protokollieren.",
-    )
-    return parser.parse_args(args)
-
-
-def main(args: Sequence[str] | None = None) -> None:
-    options = parse_args(args)
-    with create_openai_client(options.http_logging) as client:
-        run_agent(client)
+def main() -> None:
+    run_agent()
 
 
 if __name__ == "__main__":
